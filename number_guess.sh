@@ -16,3 +16,6 @@ else
 fi
 
 SECRET_NUMBER=$(( RANDOM % 1000 + 1))
+
+echo -e "\nGuess the secret number between 1 and 1000:"
+read GUESS
