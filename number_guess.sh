@@ -21,8 +21,22 @@ echo -e "\nGuess the secret number between 1 and 1000:"
 
 NUMBER_OF_GUESSES=0
 
+INSERT_INFO() {
+  if [[ -z $GAMES_PLAYED ]]
+  then
+    INSERT_USER_RESULT=$($PSQL "INSERT INTO users(username, games_played, best_game) VALUES('$USERNAME', 1, $NUMBER_OF_GUESSES)")
+  else
+    (( GAMES_PLAYED++ ))
+    UPDATE_GAMES_PLAYED=$($PSQL "UPDATE users SET games_played = $GAMES_PLAYED WHERE username = '$USERNAME'")
+    if [[ $NUMBER_OF_GUESSES -lt $BEST_GAME ]]
+    then
+      UPDATE_BEST_GAME=$($PSQL "UPDATE users SET best_game = $NUMBER_OF_GUESSES WHERE username = '$USERNAME'")
+    fi
+  fi
+}
+
 GET_NUMBER() { 
-  NUMBER_OF_GUESSES=$(( NUMBER_OF_GUESSES + 1 ))
+  (( NUMBER_OF_GUESSES++ ))
   read GUESS
 
   if [[ $GUESS =~ ^[0-9]+$ ]]
@@ -37,6 +51,7 @@ GET_NUMBER() {
       GET_NUMBER
     else
       echo -e "\nYou guessed it in $NUMBER_OF_GUESSES tries. The secret number was $SECRET_NUMBER. Nice job!"
+      INSERT_INFO
     fi
   else
     echo -e "\nThat is not an integer, guess again:"
